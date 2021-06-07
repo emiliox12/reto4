@@ -2,8 +2,6 @@ package model.logic;
 
 import java.io.FileReader;
 import java.io.Reader;
-import java.util.Comparator;
-import java.util.Random;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -18,7 +16,6 @@ import model.data_structures.NodoTS;
 import model.data_structures.TablaHashLinearProbing;
 import model.data_structures.TablaHashSeparateChaining;
 import model.data_structures.Vertex;
-import model.utils.Ordenamiento;
 
 /**
  * Definicion del modelo del mundo
@@ -66,21 +63,6 @@ public class Modelo {
 		Reader in;
 		long start = System.currentTimeMillis();
 		try {
-			in = new FileReader("./data/landing_points.csv");
-			Iterable<CSVRecord> landingPointsCsv = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
-			for (CSVRecord record : landingPointsCsv) {
-				String landing_point_id = record.get("landing_point_id");
-				String id = record.get("id");
-				String name = record.get("name");
-				String latitude = record.get("latitude");
-				String longitude = record.get("longitude");
-				LandingPoint lp = new LandingPoint(landing_point_id, id, name, latitude, longitude);
-				landingPoints.put(id, lp);
-				graph.incertVertex(landing_point_id.trim(), lp);
-				lpsCount++;
-			}
-			System.out.println(graph.numVertices());
-			// System.out.println(graph.vertices());
 			in = new FileReader("./data/countries.csv");
 			Iterable<CSVRecord> countriesCsv = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
 			for (CSVRecord record : countriesCsv) {
@@ -94,9 +76,26 @@ public class Modelo {
 				String InternetUsers = record.get("InternetUsers");
 				Country country = new Country(CountryName, CapitalName, CapitalLatitude, CapitalLongitude, CountryCode,
 						ContinentName, Population, InternetUsers);
-				countries.put(CountryCode, country);
+				countries.put(CountryName, country);
 				countriesCount++;
 			}
+			in = new FileReader("./data/landing_points.csv");
+			Iterable<CSVRecord> landingPointsCsv = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+			for (CSVRecord record : landingPointsCsv) {
+				String landing_point_id = record.get("landing_point_id");
+				String id = record.get("id");
+				String name = record.get("name");
+				String latitude = record.get("latitude");
+				String longitude = record.get("longitude");
+				String countryName = name.split("\\s")[1].trim();
+				LandingPoint lp = new LandingPoint(landing_point_id, id, name, latitude, longitude);
+				landingPoints.put(id.trim(), lp);
+				graph.incertVertex(id.trim(), lp);
+				Country country = countries.get(countryName);
+				country.addLaindingPoint(lp);
+				lpsCount++;
+			}
+			System.out.println(graph.numVertices());
 			in = new FileReader("./data/connections.csv");
 			Iterable<CSVRecord> connectionsCsv = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
 			for (CSVRecord record : connectionsCsv) {
@@ -134,26 +133,85 @@ public class Modelo {
 		System.out.println("Max: " + maxCon);
 	}
 
-	public String req1(String name) {
-		String res = "";
-		LandingPoint lp = landingPoints.get(name);
-		Vertex<String, LandingPoint> vertex = graph.getVertex(lp.id);
-		res = "" + lp + " " + vertex.outdegree();
+	public String req1(String name1, String name2) {
+		NodoTS<Integer, ITablaSimbolos<String, Integer>> nodo = graph.getSCC();
+		String clusters = nodo.getKey().toString();
+		ITablaSimbolos<String, Integer> table = nodo.getValue();
+		String sameCluster = table.get(name1) == table.get(name2) ? " sí " : " no ";
+		String res = "Los langing points " + name1 + " " + name2 + sameCluster + "estan en el mismo cluster.";
+		res += "\nEl grafo tiene " + clusters + " componentes conectados";
 		return res;
 	}
 
-	public String req2(String country) {
-		String res = "";
+	public String req2() {
+		ILista<Vertex<String, LandingPoint>> vertices = graph.vertices();
+		ILista<LandingPoint> list = new ArregloDinamico<>(vertices.size() / 2);
+		int count = 0;
+		int max = -1;
+		for (int i = 0; i < vertices.size(); i++) {
+			Vertex<String, LandingPoint> vertex = vertices.getElement(i);
+			int out = vertex.outdegree();
+			if (out > max) {
+				count = 0;
+				max = out;
+			}
+			if (max == out) {
+				list.changeInfo(count, vertex.getValue());
+				count++;
+			}
+		}
+		list = list.sublista(count);
+		String res = "Con un total de cables conectados de " + max + " los cables son: ";
+		for (int i = 0; i < list.size(); i++) {
+			LandingPoint lp = list.getElement(i);
+			res += "\nnombre: " + lp.id + " país: " + lp.country + " identificador: " + lp.landing_point_id;
+		}
 		return res;
 	}
 
-	public String req3(String category_name) {
+	public String req3(String countryName1, String countryName2) {
 		String res = "";
+		Country country1 = countries.get(countryName1);
+		Country country2 = countries.get(countryName2);
+		float minLength = -1f;
+		ILista<Edge<String, LandingPoint>> edges = new ListaEncadenada<>();
+		ILista<LandingPoint> lps1 = country1.landingPoints;
+		ILista<LandingPoint> lps2 = country2.landingPoints;
+		for (int i = 0; i < lps1.size(); i++) {
+			LandingPoint lp1 = lps1.getElement(i);
+			for (int j = 0; j < lps2.size(); j++) {
+				LandingPoint lp2 = lps2.getElement(j);
+				NodoTS<Float, ILista<Edge<String, LandingPoint>>> nodo = graph.minPath(lp1.id, lp2.id);
+				float length = nodo.getKey();
+				if (minLength == -1f || length < minLength) {
+					edges = nodo.getValue();
+					minLength = length;
+				}
+			}
+		}
+		if (minLength == -1f) { return "No hay ruta entre los dos paises"; }
+		res += "La distancia total de la ruta es de " + minLength + "km";
+		res += "El camino es:\n";
+		for (int i = 0; i < edges.size(); i++) {
+			Edge<String, LandingPoint> edge = edges.getElement(i);
+			res += "landing1: " + edge.getOrigin() + "landing2: " + edge.getDestination() + " con " + edge.getWeight() + "km\n->";
+		}
 		return res;
 	}
 
-	public String req4(String tag, int n) {
+	public String req4(String name) {
 		String res = "";
+		Vertex<String, LandingPoint> vertex = graph.getVertex(name);
+		ILista<Vertex<String, LandingPoint>> neighbours = vertex.getNeighbourVertices();
+		ITablaSimbolos<String, Country> affectedcountries = new TablaHashLinearProbing<>(neighbours.size());
+		for (int i = 0; i < neighbours.size(); i++) {
+			Vertex<String, LandingPoint> curr = neighbours.getElement(i);
+			LandingPoint lp = curr.getValue();
+			affectedcountries.put(lp.country, countries.get(lp.country));
+		}
+		ILista<Country> list = affectedcountries.valueSet();
+		res += "El numero de paises afectados es " + vertex.outdegree() + "\n";
+		res += list.toString();
 		return res;
 	}
 

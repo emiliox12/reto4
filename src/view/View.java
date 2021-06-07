@@ -14,10 +14,10 @@ public class View
 	    
 		public void printMenu()
 		{
-			System.out.println("1. Encontrar por nombre");
-//			System.out.println("2. Videos trending por país y categoría (req2  Separate Chaining)");
-//			System.out.println("3. Video Trending por categoría (req3)");
-//			System.out.println("4. Videos con más likes por país y tag (req4)");
+			System.out.println("1. Encontrar por nombre (req1");
+			System.out.println("2. Interconexión a más cables (req2)");
+			System.out.println("3. Ruta mínima en distancia (req3)");
+			System.out.println("4. Impacto de fallo de landing point (req5)");
 			System.out.println("5. cerrar");
 			System.out.println("Dar el numero de opcion a resolver, luego oprimir tecla Return: (e.g., 1):");
 		}

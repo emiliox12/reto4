@@ -44,6 +44,15 @@ public class Vertex<K extends Comparable<K>, V> implements Comparable<Vertex<K, 
 		this.value = value;
 		edges = new ArregloDinamico<Edge<K, V>>(10);
 	}
+	
+	public ILista<Vertex<K, V>> getNeighbourVertices() {
+		ILista<Vertex<K, V>> neighbourVertices = new ArregloDinamico<Vertex<K,V>>(edges.size());
+		for (int i = 0; i < edges.size(); i++) {
+			Edge<K, V> edge = edges.getElement(i);
+			neighbourVertices.addLast(edge.destination);
+		}
+		return neighbourVertices;
+	}
 
 	@Override
 	public int compareTo(Vertex<K, V> arg0) {

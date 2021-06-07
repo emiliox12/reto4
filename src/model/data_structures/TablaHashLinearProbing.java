@@ -18,8 +18,8 @@ public class TablaHashLinearProbing<K extends Comparable<K>, V extends Comparabl
 
 	public TablaHashLinearProbing(int maxSize) {
 		elements = new ArregloDinamico<>(maxSize);
-		keys = new ArregloDinamico<>(maxSize / 3);
-		values = new ArregloDinamico<>(maxSize / 3);
+		keys = new ArregloDinamico<>(maxSize / 2);
+		values = new ArregloDinamico<>(maxSize / 2);
 		p = nextPrime(maxSize * 7);
 		this.maxSize = maxSize;
 		this.size = 0;

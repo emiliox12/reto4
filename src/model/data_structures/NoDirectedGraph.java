@@ -36,6 +36,10 @@ public class NoDirectedGraph<K extends Comparable<K>, V extends Comparable<V>> i
 		Vertex<K, V> vertex = vertices.get(id);
 		vertex.dfs(null);
 	}
+	
+	public int size() {
+		return vertices.size();
+	}
 
 	boolean containsVertex(K id) {
 		return vertices.get(id) != null;
@@ -99,20 +103,13 @@ public class NoDirectedGraph<K extends Comparable<K>, V extends Comparable<V>> i
 			vxt.unmark();
 		}
 	}
-
-	public ITablaSimbolos<K, NodoTS<Float, Edge<K, V>>> minPathTree(K idOrigin) {
-		Vertex<K, V> start = getVertex(idOrigin);
-		ITablaSimbolos<K, NodoTS<Float, Edge<K, V>>> minPathTree = start.minPathTree(vertices.size());
-		unmark();
-		return minPathTree;
-	}
-	
 	public NodoTS<Integer, ITablaSimbolos<K, Integer>> getSCC() {
 		int componentCount = 0;
 		ITablaSimbolos<K, Integer> SCC = new TablaHashLinearProbing<K, Integer>(vertices().size());
 		ILista<Vertex<K,V>> vertices = vertices();
-		for (int i = 0; i < vertices.size(); i++) {
+		for (int i = 0; i < vertices.size() - 1; i++) {
 			Vertex<K,V> vertex = vertices.getElement(i);
+			System.out.println(vertex);
 			if (!vertex.isMarked()) {
 				componentCount++;
 				vertex.addToScc(SCC, componentCount);
@@ -120,8 +117,16 @@ public class NoDirectedGraph<K extends Comparable<K>, V extends Comparable<V>> i
 		}
 		return new NodoTS<Integer, ITablaSimbolos<K,Integer>>(componentCount, SCC);
 	}
+	
+	public ITablaSimbolos<K, NodoTS<Float, Edge<K, V>>> minPathTree(K idOrigin) {
+		Vertex<K, V> start = getVertex(idOrigin);
+		ITablaSimbolos<K, NodoTS<Float, Edge<K, V>>> minPathTree = start.minPathTree(vertices.size());
+		unmark();
+		return minPathTree;
+	}
+	
 
-	public ILista<Edge<K, V>> minPath(K idOrigin, K idDestination) {
+	public NodoTS<Float, ILista<Edge<K, V>>> minPath(K idOrigin, K idDestination) {
 		Vertex<K, V> start = getVertex(idOrigin);
 		if (start == null) {
 			return null;
@@ -130,11 +135,12 @@ public class NoDirectedGraph<K extends Comparable<K>, V extends Comparable<V>> i
 		unmark();
 		ILista<Edge<K, V>> path = new ListaEncadenada<Edge<K, V>>();
 		K searchId = idDestination;
-		NodoTS<Float, Edge<K, V>> curr;
+		NodoTS<Float, Edge<K, V>> curr = tree.get(searchId);
+		NodoTS<Float, ILista<Edge<K, V>>> res = new NodoTS<Float, ILista<Edge<K, V>>>(curr.getKey(), path);
 		while ((curr = tree.get(searchId)) != null && curr.getValue() != null) {
-			path.addLast(curr.getValue());
+			path.addFirst(curr.getValue());
 			searchId = curr.getValue().getOrigin().getKey();
 		}
-		return path;
+		return res;
 	}
 }

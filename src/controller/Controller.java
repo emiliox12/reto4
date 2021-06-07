@@ -27,10 +27,11 @@ public class Controller {
 	public void run() {
 		Scanner lector = new Scanner(System.in);
 		boolean fin = false;
-		String name = "";
-		String country = "";
-		String n = "";
-		String tag = "";
+		String a = "";
+		String b = "";
+		String c = "";
+		String d = "";
+		String e = "";
 		String res = "";
 
 		while (!fin) {
@@ -39,36 +40,32 @@ public class Controller {
 			int option = lector.nextInt();
 			switch (option) {
 			case 1:
-				view.printMessage("--------- \nLandingPoint name");
-				name = lector.next();
-				res = modelo.req1(name);
+				view.printMessage("--------- \nLandingPoint name1");
+				a = lector.next();
+				view.printMessage("--------- \nLandingPoint name2");
+				b = lector.next();
+				res = modelo.req1(a, b);
 				view.printMessage(res);
 				break;
-//			case 2:
-//				view.printMessage("--------- \nVideo Trending de país: \nnombre del país?");
-//				country = lector.next();
-//				System.out.println(country);
-//				res = modelo.req2(country);
-//				view.printMessage(res);
-//				break;
-//
-//			case 3:
-//				view.printMessage("--------- \nVideo Trending por categoría: \nnombre de la categoría?");
-//				name = lector.next();
-//				System.out.println(name);
-//				res = modelo.req3(name);
-//				view.printMessage(res);
-//				break;
-//
-//			case 4:
-//				view.printMessage("--------- \nEtiqueta del video?");
-//				tag = lector.next();
-//				view.printMessage("--------- \nnumero de registros?");
-//				n = lector.next();
-//				System.out.println(country + " " + " " + Integer.parseInt(n) + " " + tag);
-//				res = modelo.req4(tag, Integer.parseInt(n));
-//				view.printMessage(res);
-//				break;
+			case 2:
+				res = modelo.req2();
+				view.printMessage(res);
+				break;
+			case 3:
+				view.printMessage("--------- \nnombre del pais a?");
+				a = lector.next();
+				view.printMessage("--------- \nnombre del pais b?");
+				b = lector.next();
+				res = modelo.req3(a,b);
+				view.printMessage(res);
+				break;
+
+			case 4:
+				view.printMessage("--------- \nnombre landing point?");
+				a = lector.next();
+				res = modelo.req4(a);
+				view.printMessage(res);
+				break;
 
 			case 5:
 				view.printMessage("--------- \n Hasta pronto !! \n---------");

@@ -7,6 +7,8 @@ public class LandingPoint implements Comparable<LandingPoint> {
 	public String name;
 	public String latitude;
 	public String longitude;
+	public String country;
+	public String city;
 
 	public LandingPoint(String landing_point_id, String id, String name, String latitude, String longitude) {
 		this.landing_point_id = landing_point_id;
@@ -14,6 +16,8 @@ public class LandingPoint implements Comparable<LandingPoint> {
 		this.name = name;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		city = name.split("\\s")[0].trim();
+		country = name.split("\\s")[1].trim();
 	}
 
 	@Override
